@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Aufgaben</title>
+
+  <!-- App Icon -->
+  <link rel="apple-touch-icon" href="MetroUI-Other-Task-icon.png">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f5f5f7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      padding-bottom: 100px;
+    }
+
+    .main-container {
+      padding: 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #000000;
+    }
+
+    .notification-icon {
+      font-size: 1.5rem;
+      color: #000000;
+    }
+
+    /* Segment Control */
+    .segment-control {
+      display: inline-flex;
+      background-color: transparent;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      gap: 0.5rem;
+    }
+
+    .segment-button {
+      background-color: #5cb85c;
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      padding: 0.5rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background-color 0.2s;
+      cursor: pointer;
+    }
+
+    .segment-button.inactive {
+      background-color: #e8e8ed;
+      color: #000000;
+    }
+
+    /* Task Section */
+    .task-section {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .child-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #5cb85c;
+      margin-bottom: 0.5rem;
+    }
+
+    .task-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+    }
+
+    .task-info {
+      flex-grow: 1;
+    }
+
+    .task-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #000000;
+      margin-bottom: 0.125rem;
+    }
+
+    .task-time {
+      font-size: 0.8rem;
+      color: #6c757d;
+    }
+
+    .task-button {
+      background-color: #5cb85c;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.45rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: transform 0.1s, background-color 0.2s;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .task-button:active {
+      transform: scale(0.96);
+      background-color: #4cae4c;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: #ffffff;
+      border-top: 1px solid #e0e0e0;
+      padding: 0.75rem 1rem;
+      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .nav-icon {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #8e8e93;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .fab-button {
+      width: 56px;
+      height: 56px;
+      background-color: #5cb85c;
+      border-radius: 50%;
+      border: none;
+      color: #ffffff;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(92, 184, 92, 0.25);
+      cursor: pointer;
+      font-weight: 300;
+      line-height: 1;
+    }
+
+    .fab-button:active {
+      transform: scale(0.95);
+    }
+
+    /* Home Indicator */
+    .home-indicator {
+      width: 140px;
+      height: 5px;
+      background-color: #000000;
+      border-radius: 3px;
+      margin: 0.5rem auto 0 auto;
+    }
+  </style>
+</head>
+<body>
+<!-- Main Container -->
+<div class="main-container">
+  <!-- Header -->
+  <div class="header">
+    <h1 class="page-title">Aufgaben</h1>
+    <span class="notification-icon">🔔</span>
+  </div>
+
+  <!-- Segment Control -->
+  <div class="segment-control">
+    <button class="segment-button">Offen</button>
+    <button class="segment-button inactive">Erledigt</button>
+  </div>
+
+  <!-- Task Sections -->
+
+  <!-- Jannis's Tasks -->
+  <div class="task-section">
+    <div class="child-name">Jannis</div>
+    <div class="task-item">
+      <div class="task-info">
+        <div class="task-title">Zimmer aufräumen</div>
+        <div class="task-time">Bis 15:00</div>
+      </div>
+      <button class="task-button">Erledigt</button>
+    </div>
+  </div>
+
+  <!-- Jonas's Tasks -->
+  <div class="task-section">
+    <div class="child-name">Jonas</div>
+    <div class="task-item">
+      <div class="task-info">
+        <div class="task-title">Spülmaschine ausräumen</div>
+        <div class="task-time">Bis 18:00</div>
+      </div>
+      <button class="task-button">Erledigt</button>
+    </div>
+  </div>
+
+  <!-- Joshua's Tasks -->
+  <div class="task-section">
+    <div class="child-name">Joshua</div>
+    <div class="task-item">
+      <div class="task-info">
+        <div class="task-title">Hausaufgaben machen</div>
+        <div class="task-time"></div>
+      </div>
+      <button class="task-button">Erledigt</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+  <button class="nav-icon">☰</button>
+  <button class="fab-button">+</button>
+  <button class="nav-icon">✓</button>
+</div>
+
+</body>
+</html>

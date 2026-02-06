@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Aufgaben</title>
+  <link rel="apple-touch-icon" href="MetroUI-Other-Task-icon.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* ===== Base ===== */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #f5f5f7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      position: fixed;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== Screen System ===== */
+    .screen {
+      display: none;
+      height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .screen--active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== WhoAreYou Screen ===== */
+    #screen-who {
+      background-color: #ffffff;
+    }
+
+    .who-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+    }
+
+    .who-title {
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 3rem;
+      color: #000000;
+    }
+
+    .cards-row {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .role-card {
+      background: #e8f4f8;
+      border-radius: 20px;
+      padding: 2rem 1rem;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      border: none;
+      flex: 1;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .role-card:active {
+      transform: scale(0.98);
+      box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .role-card.kind-card {
+      background: #fff5e6;
+    }
+
+    .role-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      line-height: 1;
+    }
+
+    .role-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 0.5rem;
+    }
+
+    .role-description {
+      font-size: 0.85rem;
+      color: #6c757d;
+      margin: 0;
+    }
+
+    /* ===== PIN Screens ===== */
+    .pin-screen-back {
+      padding: 16px 20px;
+      margin-top: env(safe-area-inset-top);
+      cursor: pointer;
+    }
+
+    .back-arrow {
+      width: 28px;
+      height: 28px;
+      color: #1c1c1e;
+    }
+
+    .pin-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 80px 20px 20px;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+
+    .pin-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #1c1c1e;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .pin-input {
+      width: 100%;
+      max-width: 320px;
+      height: 56px;
+      background-color: #ffffff;
+      border: 1px solid #d1d1d6;
+      border-radius: 12px;
+      font-size: 24px;
+      font-weight: 500;
+      text-align: center;
+      letter-spacing: 8px;
+      color: #1c1c1e;
+      padding: 0 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      transition: all 0.2s ease;
+    }
+
+    .pin-input:focus {
+      outline: none;
+      border-color: #007aff;
+      box-shadow: 0 0 0 4px rgba(0,122,255,0.1);
+    }
+
+    .pin-input.error {
+      border-color: #ff3b30;
+      box-shadow: 0 0 0 4px rgba(255,59,48,0.1);
+    }
+
+    .pin-error {
+      color: #ff3b30;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+      text-align: center;
+      min-height: 1.4em;
+    }
+
+    /* ===== Shake Animation ===== */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(10px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
+    }
+
+    .shake {
+      animation: shake 0.4s ease-in-out;
+    }
+
+    /* ===== Admin Screen ===== */
+    .admin-main {
+      flex: 1;
+      padding: 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+      width: 100%;
+      padding-bottom: 100px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #000000;
+      margin: 0;
+    }
+
+    .header-icon {
+      font-size: 1.5rem;
+      color: #000000;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0.25rem;
+    }
+
+    .segment-control {
+      display: inline-flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .segment-button {
+      background-color: #5cb85c;
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      padding: 0.5rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .segment-button.inactive {
+      background-color: #e8e8ed;
+      color: #000000;
+    }
+
+    .task-section {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .child-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #5cb85c;
+      margin-bottom: 0.5rem;
+    }
+
+    .task-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+    }
+
+    .task-item + .task-item {
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .task-info {
+      flex-grow: 1;
+      min-width: 0;
+    }
+
+    .task-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #000000;
+      margin-bottom: 0.125rem;
+    }
+
+    .task-time {
+      font-size: 0.8rem;
+      color: #6c757d;
+    }
+
+    .task-button {
+      background-color: #5cb85c;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.45rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: transform 0.1s, background-color 0.2s;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .task-button:active {
+      transform: scale(0.96);
+      background-color: #4cae4c;
+    }
+
+    .task-button.disabled {
+      background-color: #adb5bd;
+      cursor: default;
+    }
+
+    .task-button.done {
+      background-color: #e8e8ed;
+      color: #6c757d;
+      cursor: default;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: #ffffff;
+      border-top: 1px solid #e0e0e0;
+      padding: 0.75rem 1rem;
+      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .nav-icon {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #8e8e93;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .fab-button {
+      width: 56px;
+      height: 56px;
+      background-color: #5cb85c;
+      border-radius: 50%;
+      border: none;
+      color: #ffffff;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(92, 184, 92, 0.25);
+      cursor: pointer;
+      font-weight: 300;
+      line-height: 1;
+    }
+
+    .fab-button:active {
+      transform: scale(0.95);
+    }
+
+    /* ===== Admin Add Task Screen ===== */
+    .add-task-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .top-bar .back-button {
+      position: absolute;
+      left: 0;
+      font-size: 2rem;
+      font-weight: 600;
+      color: #000000;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    .top-bar .page-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .input-card {
+      background-color: #ffffff;
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .input-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .input-icon {
+      font-size: 1.5rem;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .input-label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #000000;
+    }
+
+    .text-input, .select-input, .time-input, .number-input {
+      background-color: #f5f5f7;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 0.95rem;
+      color: #000000;
+      width: 100%;
+    }
+
+    .text-input::placeholder, .select-input option[value=""], .number-input::placeholder {
+      color: #8e8e93;
+    }
+
+    .text-input:focus, .select-input:focus, .time-input:focus, .number-input:focus {
+      outline: none;
+      background-color: #e8e8ed;
+    }
+
+    .select-input {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238e8e93' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
+    }
+
+    .time-input {
+      color: #000000;
+    }
+
+    .number-input {
+      -moz-appearance: textfield;
+    }
+
+    .number-input::-webkit-outer-spin-button,
+    .number-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .save-button {
+      background-color: #5cb85c;
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      padding: 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      width: 100%;
+      margin-top: auto;
+      margin-bottom: 1rem;
+      transition: transform 0.1s, background-color 0.2s;
+      cursor: pointer;
+    }
+
+    .save-button:active {
+      transform: scale(0.98);
+      background-color: #4cae4c;
+    }
+
+    .save-button:disabled {
+      background-color: #adb5bd;
+      cursor: default;
+    }
+
+    /* ===== Kids Screen ===== */
+    .kids-main {
+      flex: 1;
+      padding: 1.5rem 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+      width: 100%;
+      padding-bottom: 100px;
+    }
+
+    .greeting {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #000000;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    .kids-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .task-card {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .task-icon {
+      width: 48px;
+      height: 48px;
+      font-size: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .task-content {
+      flex-grow: 1;
+      min-width: 0;
+    }
+
+    .task-card .task-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .task-points {
+      font-size: 0.8rem;
+      color: #6c757d;
+    }
+
+    .kids-bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: #ffffff;
+      border-top: 1px solid #e0e0e0;
+      padding: 0.75rem 1rem;
+      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+      z-index: 10;
+    }
+
+    .kids-bottom-nav .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .kids-back-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.25rem;
+    }
+
+    .kids-back-btn svg {
+      width: 24px;
+      height: 24px;
+      color: #8e8e93;
+    }
+
+    .kids-points-badge {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #5cb85c;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 500px;
+      margin: 0.5rem auto 0;
+    }
+
+    .filter-button {
+      background-color: #f5f5f7;
+      color: #000000;
+      border: none;
+      border-radius: 10px;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+      transition: background-color 0.2s;
+    }
+
+    .filter-button.active {
+      background-color: #5cb85c;
+      color: #ffffff;
+    }
+
+    .filter-button:active {
+      opacity: 0.8;
+    }
+
+    /* ===== Modal ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 2rem 1.5rem;
+      width: 90%;
+      max-width: 340px;
+      text-align: center;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1c1c1e;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-subtitle {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-pin-input {
+      width: 100%;
+      max-width: 200px;
+      height: 48px;
+      background-color: #f5f5f7;
+      border: 1px solid #d1d1d6;
+      border-radius: 12px;
+      font-size: 24px;
+      font-weight: 500;
+      text-align: center;
+      letter-spacing: 8px;
+      color: #1c1c1e;
+      margin: 0 auto;
+      display: block;
+      transition: all 0.2s ease;
+    }
+
+    .modal-pin-input:focus {
+      outline: none;
+      border-color: #007aff;
+      box-shadow: 0 0 0 4px rgba(0,122,255,0.1);
+    }
+
+    .modal-pin-input.error {
+      border-color: #ff3b30;
+      box-shadow: 0 0 0 4px rgba(255,59,48,0.1);
+    }
+
+    .modal-error {
+      color: #ff3b30;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+      min-height: 1.2em;
+    }
+
+    .modal-cancel {
+      margin-top: 1rem;
+      background: none;
+      border: none;
+      color: #007aff;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* ===== Empty State ===== */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #8e8e93;
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed;
+      top: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #1c1c1e;
+      color: #ffffff;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 200;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ===== Loading Spinner ===== */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #ffffff;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== Screen: Who Are You ===== -->
+<div id="screen-who" class="screen screen--active">
+  <div class="who-container">
+    <h1 class="who-title">Wer bist du?</h1>
+    <div class="container px-0">
+      <div class="cards-row">
+        <div class="role-card" onclick="showScreen('screen-admin-pin')">
+          <div class="role-icon">&#x1FAC3;</div>
+          <h2 class="role-title">Eltern</h2>
+          <p class="role-description">Zugang zum Admin-Bereich</p>
+        </div>
+        <div class="role-card kind-card" onclick="showScreen('screen-kids-pin')">
+          <div class="role-icon">&#x1F466;</div>
+          <h2 class="role-title">Kind</h2>
+          <p class="role-description">Zugang zum Kinder-Bereich</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Screen: Admin PIN ===== -->
+<div id="screen-admin-pin" class="screen">
+  <div class="pin-screen-back" onclick="showScreen('screen-who')">
+    <svg class="back-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    </svg>
+  </div>
+  <div class="pin-container">
+    <h1 class="pin-title">Admin Code eingeben</h1>
+    <input id="admin-pin" type="password" inputmode="numeric" pattern="[0-9]*"
+           maxlength="4" class="pin-input" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;" autocomplete="off">
+    <div id="admin-pin-error" class="pin-error"></div>
+  </div>
+</div>
+
+<!-- ===== Screen: Kids PIN ===== -->
+<div id="screen-kids-pin" class="screen">
+  <div class="pin-screen-back" onclick="showScreen('screen-who')">
+    <svg class="back-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    </svg>
+  </div>
+  <div class="pin-container">
+    <h1 class="pin-title">Gib deinen Code ein</h1>
+    <input id="kids-pin" type="password" inputmode="numeric" pattern="[0-9]*"
+           maxlength="4" class="pin-input" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;" autocomplete="off">
+    <div id="kids-pin-error" class="pin-error"></div>
+  </div>
+</div>
+
+<!-- ===== Screen: Admin Dashboard ===== -->
+<div id="screen-admin" class="screen">
+  <div class="admin-main">
+    <div class="header">
+      <h1 class="page-title">Aufgaben</h1>
+      <button class="header-icon" onclick="showScreen('screen-who'); logout();">&#x2630;</button>
+    </div>
+    <div class="segment-control">
+      <button id="admin-filter-open" class="segment-button" onclick="setAdminFilter('open')">Offen</button>
+      <button id="admin-filter-done" class="segment-button inactive" onclick="setAdminFilter('completed')">Erledigt</button>
+    </div>
+    <div id="admin-tasks-container"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-icon" onclick="showScreen('screen-who'); logout();">&#x2630;</button>
+    <button class="fab-button" onclick="openAddTask()">+</button>
+    <button class="nav-icon">&#x2713;</button>
+  </div>
+</div>
+
+<!-- ===== Screen: Admin Add Task ===== -->
+<div id="screen-admin-add" class="screen">
+  <div class="add-task-main">
+    <div class="top-bar">
+      <button class="back-button" onclick="showScreen('screen-admin'); loadAdminTasks();">&larr;</button>
+      <h1 class="page-title">Aufgabe hinzufuegen</h1>
+    </div>
+
+    <div class="input-card">
+      <div class="input-header">
+        <div class="input-icon">&#x1F464;</div>
+        <div class="input-label">Kind auswaehlen</div>
+      </div>
+      <select id="add-child-select" class="select-input">
+        <option value="">Kind auswaehlen...</option>
+      </select>
+    </div>
+
+    <div class="input-card">
+      <div class="input-header">
+        <div class="input-icon">&#x1F4CB;</div>
+        <div class="input-label">Aufgabe</div>
+      </div>
+      <input id="add-task-title" type="text" class="text-input" placeholder="z. B. Zimmer aufraumen">
+    </div>
+
+    <div class="input-card">
+      <div class="input-header">
+        <div class="input-icon">&#x1F550;</div>
+        <div class="input-label">Uhrzeit</div>
+      </div>
+      <input id="add-task-time" type="time" class="time-input">
+    </div>
+
+    <div class="input-card">
+      <div class="input-header">
+        <div class="input-icon">&#x2B50;</div>
+        <div class="input-label">Punkte</div>
+      </div>
+      <input id="add-task-points" type="number" class="number-input" min="1" max="100" placeholder="z. B. 3">
+    </div>
+
+    <button id="save-task-btn" class="save-button" onclick="saveTask()">Aufgabe speichern</button>
+  </div>
+</div>
+
+<!-- ===== Screen: Kids Tasks ===== -->
+<div id="screen-kids" class="screen">
+  <div class="kids-main">
+    <div id="kids-greeting" class="greeting"></div>
+    <h1 class="kids-title">Deine Aufgaben</h1>
+    <div id="kids-tasks-container"></div>
+  </div>
+  <div class="kids-bottom-nav">
+    <div class="header-row">
+      <button class="kids-back-btn" onclick="showScreen('screen-who'); logout();">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <span id="kids-points-badge" class="kids-points-badge"></span>
+    </div>
+    <div class="filter-buttons">
+      <button id="kids-filter-all" class="filter-button active" onclick="setKidsFilter('all')">Alle</button>
+      <button id="kids-filter-done" class="filter-button" onclick="setKidsFilter('completed')">Erledigt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: PIN Confirm ===== -->
+<div id="modal-pin-confirm" class="modal-overlay" onclick="if(event.target===this) closeModal();">
+  <div class="modal-box">
+    <div class="modal-title">PIN bestaetigen</div>
+    <div class="modal-subtitle">Gib deinen Code ein, um die Aufgabe abzuschliessen</div>
+    <input id="modal-pin" type="password" inputmode="numeric" pattern="[0-9]*"
+           maxlength="4" class="modal-pin-input" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;" autocomplete="off">
+    <div id="modal-pin-error" class="modal-error"></div>
+    <button class="modal-cancel" onclick="closeModal()">Abbrechen</button>
+  </div>
+</div>
+
+<!-- ===== Toast ===== -->
+<div id="toast" class="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ===== State ===== */
+  var state = {
+    token: null,
+    role: null,
+    userId: null,
+    childId: null,
+    userName: null,
+    adminFilter: 'open',
+    kidsFilter: 'all',
+    adminTasks: [],
+    kidsTasks: [],
+    children: [],
+    completingTaskId: null
+  };
+
+  /* ===== Utility: Icon Mapping ===== */
+  var iconKeywords = {
+    'zimmer': '\u{1F6CF}\uFE0F',
+    'aufraum': '\u{1F6CF}\uFE0F',
+    'bett': '\u{1F6CF}\uFE0F',
+    'hund': '\u{1F436}',
+    'katze': '\u{1F431}',
+    'tier': '\u{1F43E}',
+    'fuetter': '\u{1F436}',
+    'haus': '\u{1F3E0}',
+    'hausaufgab': '\u{1F4DA}',
+    'schule': '\u{1F4DA}',
+    'lern': '\u{1F4DA}',
+    'spuel': '\u{1F37D}\uFE0F',
+    'kueche': '\u{1F37D}\uFE0F',
+    'abwasch': '\u{1F37D}\uFE0F',
+    'geschirr': '\u{1F37D}\uFE0F',
+    'wasch': '\u{1F9FA}',
+    'waesche': '\u{1F9FA}',
+    'muell': '\u{1F5D1}\uFE0F',
+    'einkauf': '\u{1F6D2}',
+    'garten': '\u{1F331}',
+    'blumen': '\u{1F33B}',
+    'staub': '\u{1F9F9}',
+    'saug': '\u{1F9F9}',
+    'putz': '\u{1F9F9}',
+    'bad': '\u{1F6BF}',
+    'zaehne': '\u{1FAA5}',
+    'lesen': '\u{1F4D6}',
+    'buch': '\u{1F4D6}',
+    'sport': '\u26BD',
+    'ueb': '\u{1F3CB}\uFE0F',
+    'musik': '\u{1F3B5}',
+    'klavier': '\u{1F3B9}'
+  };
+
+  function getTaskIcon(title) {
+    var lower = title.toLowerCase();
+    var keys = Object.keys(iconKeywords);
+    for (var i = 0; i < keys.length; i++) {
+      if (lower.indexOf(keys[i]) !== -1) {
+        return iconKeywords[keys[i]];
+      }
+    }
+    return '\u{1F4CB}';
+  }
+
+  /* ===== Utility: Format Time ===== */
+  function formatDueDate(isoString) {
+    if (!isoString) return '';
+    try {
+      var d = new Date(isoString);
+      var h = d.getHours().toString().padStart(2, '0');
+      var m = d.getMinutes().toString().padStart(2, '0');
+      return 'Bis ' + h + ':' + m;
+    } catch (e) {
+      return '';
+    }
+  }
+
+  /* ===== Utility: Decode JWT ===== */
+  function decodeJWT(token) {
+    try {
+      var parts = token.split('.');
+      var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return payload;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /* ===== Utility: Check JWT Expiry ===== */
+  function isTokenExpired(token) {
+    var payload = decodeJWT(token);
+    if (!payload || !payload.exp) return true;
+    return (payload.exp * 1000) < Date.now();
+  }
+
+  /* ===== Toast ===== */
+  function showToast(message) {
+    var el = document.getElementById('toast');
+    el.textContent = message;
+    el.classList.add('show');
+    setTimeout(function() { el.classList.remove('show'); }, 2500);
+  }
+  window.showToast = showToast;
+
+  /* ===== Screen Navigation ===== */
+  function showScreen(id) {
+    var screens = document.querySelectorAll('.screen');
+    for (var i = 0; i < screens.length; i++) {
+      screens[i].classList.remove('screen--active');
+    }
+    var target = document.getElementById(id);
+    if (target) target.classList.add('screen--active');
+
+    // Focus PIN input when entering PIN screens
+    if (id === 'screen-admin-pin') {
+      setTimeout(function() { document.getElementById('admin-pin').focus(); }, 100);
+    } else if (id === 'screen-kids-pin') {
+      setTimeout(function() { document.getElementById('kids-pin').focus(); }, 100);
+    }
+  }
+  window.showScreen = showScreen;
+
+  /* ===== API Helper ===== */
+  function api(method, path, body) {
+    var opts = {
+      method: method,
+      headers: { 'Content-Type': 'application/json' }
+    };
+    if (state.token) {
+      opts.headers['Authorization'] = 'Bearer ' + state.token;
+    }
+    if (body !== undefined && body !== null) {
+      opts.body = JSON.stringify(body);
+    }
+    return fetch(path, opts).then(function(res) {
+      if (res.status === 401 && state.token && path !== '/api/pin/check') {
+        logout();
+        showScreen('screen-who');
+        showToast('Sitzung abgelaufen');
+        return Promise.reject(new Error('Unauthorized'));
+      }
+      return res.json().then(function(data) {
+        data._status = res.status;
+        return data;
+      });
+    });
+  }
+
+  /* ===== Auth ===== */
+  function login(token, role, userId, childId) {
+    state.token = token;
+    state.role = role;
+    state.userId = userId;
+    state.childId = childId || null;
+    localStorage.setItem('jwt', token);
+
+    var payload = decodeJWT(token);
+    state.userName = payload ? payload.name : '';
+  }
+
+  function logout() {
+    state.token = null;
+    state.role = null;
+    state.userId = null;
+    state.childId = null;
+    state.userName = null;
+    state.adminTasks = [];
+    state.kidsTasks = [];
+    state.children = [];
+    state.adminFilter = 'open';
+    state.kidsFilter = 'all';
+    localStorage.removeItem('jwt');
+
+    // Clear PIN inputs
+    document.getElementById('admin-pin').value = '';
+    document.getElementById('kids-pin').value = '';
+    document.getElementById('admin-pin-error').textContent = '';
+    document.getElementById('kids-pin-error').textContent = '';
+  }
+  window.logout = logout;
+
+  /* ===== Session Restore ===== */
+  function restoreSession() {
+    var token = localStorage.getItem('jwt');
+    if (!token || isTokenExpired(token)) {
+      localStorage.removeItem('jwt');
+      return;
+    }
+
+    var payload = decodeJWT(token);
+    if (!payload) return;
+
+    state.token = token;
+    state.role = payload.role;
+    state.userId = payload.userId;
+    state.userName = payload.name;
+
+    if (payload.role === 'admin') {
+      loadAdminTasks();
+      showScreen('screen-admin');
+    } else if (payload.role === 'child') {
+      state.childId = payload.userId;
+      loadKidsTasks();
+      showScreen('screen-kids');
+    }
+  }
+
+  /* ===== PIN Handling ===== */
+  function handlePinInput(inputEl, errorEl, expectedRole) {
+    inputEl.addEventListener('input', function() {
+      // Only allow digits
+      this.value = this.value.replace(/[^0-9]/g, '');
+      errorEl.textContent = '';
+      this.classList.remove('error');
+      this.classList.remove('shake');
+
+      if (this.value.length === 4) {
+        var pin = this.value;
+        this.disabled = true;
+
+        api('POST', '/api/pin/check', { pin: pin }).then(function(data) {
+          inputEl.disabled = false;
+
+          if (!data.success) {
+            inputEl.value = '';
+            errorEl.textContent = data.error || 'Ungueltiger Code';
+            inputEl.classList.add('error');
+            inputEl.classList.add('shake');
+            inputEl.focus();
+            return;
+          }
+
+          // Check role matches
+          if (expectedRole === 'admin' && data.role !== 'admin') {
+            inputEl.value = '';
+            errorEl.textContent = 'Das ist kein Admin-Code';
+            inputEl.classList.add('error');
+            inputEl.classList.add('shake');
+            inputEl.focus();
+            return;
+          }
+
+          if (expectedRole === 'child' && data.role !== 'child') {
+            inputEl.value = '';
+            errorEl.textContent = 'Das ist kein Kinder-Code';
+            inputEl.classList.add('error');
+            inputEl.classList.add('shake');
+            inputEl.focus();
+            return;
+          }
+
+          login(data.token, data.role, data.userId, data.childId);
+
+          inputEl.value = '';
+          errorEl.textContent = '';
+
+          if (data.role === 'admin') {
+            loadAdminTasks();
+            showScreen('screen-admin');
+          } else {
+            loadKidsTasks();
+            showScreen('screen-kids');
+          }
+        }).catch(function() {
+          inputEl.disabled = false;
+          inputEl.value = '';
+          errorEl.textContent = 'Ungueltiger Code';
+          inputEl.classList.add('error');
+          inputEl.classList.add('shake');
+          inputEl.focus();
+        });
+      }
+    });
+  }
+
+  /* ===== Admin: Load Tasks ===== */
+  function loadAdminTasks() {
+    api('GET', '/api/admin/tasks').then(function(data) {
+      if (data.success) {
+        state.adminTasks = data.data;
+        renderAdminTasks();
+      }
+    }).catch(function() {});
+
+    // Also load children for the dropdown
+    api('GET', '/api/admin/children').then(function(data) {
+      if (data.success) {
+        state.children = data.data;
+      }
+    }).catch(function() {});
+  }
+  window.loadAdminTasks = loadAdminTasks;
+
+  /* ===== Admin: Render Tasks ===== */
+  function renderAdminTasks() {
+    var container = document.getElementById('admin-tasks-container');
+    var tasks = state.adminTasks.filter(function(t) {
+      return t.status === state.adminFilter;
+    });
+
+    if (tasks.length === 0) {
+      container.innerHTML = '<div class="empty-state">' +
+        '<div class="empty-state-icon">' + (state.adminFilter === 'open' ? '\u{1F389}' : '\u{1F4CB}') + '</div>' +
+        '<p>' + (state.adminFilter === 'open' ? 'Keine offenen Aufgaben' : 'Noch keine erledigten Aufgaben') + '</p></div>';
+      return;
+    }
+
+    // Group tasks by child
+    var groups = {};
+    tasks.forEach(function(t) {
+      var name = t.childName || 'Unbekannt';
+      if (!groups[name]) groups[name] = [];
+      groups[name].push(t);
+    });
+
+    var html = '';
+    Object.keys(groups).forEach(function(name) {
+      html += '<div class="task-section">';
+      html += '<div class="child-name">' + escapeHtml(name) + '</div>';
+      groups[name].forEach(function(t) {
+        html += '<div class="task-item">';
+        html += '<div class="task-info">';
+        html += '<div class="task-title">' + escapeHtml(t.title) + '</div>';
+        html += '<div class="task-time">' + escapeHtml(formatDueDate(t.dueDate)) + '</div>';
+        html += '</div>';
+
+        if (t.status === 'open') {
+          html += '<button class="task-button disabled" onclick="showToast(\'Nur das Kind kann Aufgaben erledigen\')">Erledigt</button>';
+        } else {
+          html += '<span class="task-button done">\u2713 Erledigt</span>';
+        }
+
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  /* ===== Admin: Filter ===== */
+  function setAdminFilter(filter) {
+    state.adminFilter = filter;
+    document.getElementById('admin-filter-open').className = 'segment-button' + (filter === 'open' ? '' : ' inactive');
+    document.getElementById('admin-filter-done').className = 'segment-button' + (filter === 'completed' ? '' : ' inactive');
+    renderAdminTasks();
+  }
+  window.setAdminFilter = setAdminFilter;
+
+  /* ===== Admin: Open Add Task ===== */
+  function openAddTask() {
+    // Populate children dropdown
+    var select = document.getElementById('add-child-select');
+    select.innerHTML = '<option value="">Kind auswaehlen...</option>';
+    state.children.forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.name;
+      select.appendChild(opt);
+    });
+
+    // Reset form
+    document.getElementById('add-task-title').value = '';
+    document.getElementById('add-task-time').value = '';
+    document.getElementById('add-task-points').value = '';
+
+    showScreen('screen-admin-add');
+  }
+  window.openAddTask = openAddTask;
+
+  /* ===== Admin: Save Task ===== */
+  function saveTask() {
+    var childId = parseInt(document.getElementById('add-child-select').value);
+    var title = document.getElementById('add-task-title').value.trim();
+    var time = document.getElementById('add-task-time').value;
+    var points = parseInt(document.getElementById('add-task-points').value);
+
+    if (!childId || !title || !time || !points || points < 1) {
+      showToast('Bitte alle Felder ausfuellen');
+      return;
+    }
+
+    // Build ISO date string with today's date and selected time
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = (now.getMonth() + 1).toString().padStart(2, '0');
+    var day = now.getDate().toString().padStart(2, '0');
+    var dueDate = year + '-' + month + '-' + day + 'T' + time + ':00';
+
+    var btn = document.getElementById('save-task-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+
+    api('POST', '/api/admin/tasks', {
+      childId: childId,
+      title: title,
+      points: points,
+      dueDate: dueDate
+    }).then(function(data) {
+      btn.disabled = false;
+      btn.textContent = 'Aufgabe speichern';
+
+      if (data.success) {
+        showToast('Aufgabe gespeichert!');
+        loadAdminTasks();
+        showScreen('screen-admin');
+      } else {
+        var msg = 'Fehler beim Speichern';
+        if (data.errors) {
+          var firstKey = Object.keys(data.errors)[0];
+          if (firstKey) msg = data.errors[firstKey];
+        }
+        showToast(msg);
+      }
+    }).catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Aufgabe speichern';
+      showToast('Netzwerkfehler');
+    });
+  }
+  window.saveTask = saveTask;
+
+  /* ===== Kids: Load Tasks ===== */
+  function loadKidsTasks() {
+    var cid = state.childId || state.userId;
+    document.getElementById('kids-greeting').textContent = 'Hi ' + (state.userName || '') + ' \u{1F44B}';
+
+    api('GET', '/api/child/' + cid + '/tasks').then(function(data) {
+      if (data.success) {
+        state.kidsTasks = data.data;
+        renderKidsTasks();
+      }
+    }).catch(function() {});
+
+    // Load points
+    api('GET', '/api/child/' + cid + '/points').then(function(data) {
+      if (data.success) {
+        document.getElementById('kids-points-badge').textContent = '\u2B50 ' + data.data.points + ' Punkte';
+      }
+    }).catch(function() {});
+  }
+
+  /* ===== Kids: Render Tasks ===== */
+  function renderKidsTasks() {
+    var container = document.getElementById('kids-tasks-container');
+    var tasks = state.kidsTasks;
+
+    if (state.kidsFilter === 'completed') {
+      tasks = tasks.filter(function(t) { return t.status === 'completed'; });
+    } else {
+      tasks = tasks.filter(function(t) { return t.status === 'open'; });
+    }
+
+    if (tasks.length === 0) {
+      container.innerHTML = '<div class="empty-state">' +
+        '<div class="empty-state-icon">' + (state.kidsFilter === 'all' ? '\u{1F389}' : '\u{1F4CB}') + '</div>' +
+        '<p>' + (state.kidsFilter === 'all' ? 'Keine offenen Aufgaben - super!' : 'Noch keine erledigten Aufgaben') + '</p></div>';
+      return;
+    }
+
+    var html = '';
+    tasks.forEach(function(t) {
+      html += '<div class="task-card">';
+      html += '<div class="task-icon">' + getTaskIcon(t.title) + '</div>';
+      html += '<div class="task-content">';
+      html += '<div class="task-title">' + escapeHtml(t.title) + '</div>';
+      var timeStr = formatDueDate(t.dueDate);
+      if (timeStr) html += '<div class="task-time">' + escapeHtml(timeStr) + '</div>';
+      if (t.points) html += '<div class="task-points">+' + t.points + ' Punkte</div>';
+      html += '</div>';
+
+      if (t.status === 'open') {
+        html += '<button class="task-button" onclick="openCompleteModal(' + t.id + ')">Erledigt</button>';
+      } else {
+        html += '<span class="task-button done">\u2713</span>';
+      }
+
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  /* ===== Kids: Filter ===== */
+  function setKidsFilter(filter) {
+    state.kidsFilter = filter;
+    document.getElementById('kids-filter-all').className = 'filter-button' + (filter === 'all' ? ' active' : '');
+    document.getElementById('kids-filter-done').className = 'filter-button' + (filter === 'completed' ? ' active' : '');
+    renderKidsTasks();
+  }
+  window.setKidsFilter = setKidsFilter;
+
+  /* ===== Modal: Open ===== */
+  function openCompleteModal(taskId) {
+    state.completingTaskId = taskId;
+    var pinInput = document.getElementById('modal-pin');
+    var errorEl = document.getElementById('modal-pin-error');
+    pinInput.value = '';
+    pinInput.classList.remove('error', 'shake');
+    errorEl.textContent = '';
+    document.getElementById('modal-pin-confirm').classList.add('active');
+    setTimeout(function() { pinInput.focus(); }, 100);
+  }
+  window.openCompleteModal = openCompleteModal;
+
+  /* ===== Modal: Close ===== */
+  function closeModal() {
+    document.getElementById('modal-pin-confirm').classList.remove('active');
+    state.completingTaskId = null;
+  }
+  window.closeModal = closeModal;
+
+  /* ===== Modal: PIN Handler ===== */
+  function setupModalPin() {
+    var input = document.getElementById('modal-pin');
+    var errorEl = document.getElementById('modal-pin-error');
+
+    input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^0-9]/g, '');
+      errorEl.textContent = '';
+      this.classList.remove('error', 'shake');
+
+      if (this.value.length === 4) {
+        var pin = this.value;
+        input.disabled = true;
+
+        api('POST', '/api/child/tasks/' + state.completingTaskId + '/complete', { pin: pin })
+          .then(function(data) {
+            input.disabled = false;
+
+            if (!data.success) {
+              input.value = '';
+              errorEl.textContent = data.error || 'Fehler';
+              input.classList.add('error', 'shake');
+              input.focus();
+              return;
+            }
+
+            closeModal();
+            showToast('Aufgabe erledigt! \u{1F389}');
+
+            // Update points badge
+            if (data.data && data.data.newPoints !== undefined) {
+              document.getElementById('kids-points-badge').textContent = '\u2B50 ' + data.data.newPoints + ' Punkte';
+            }
+
+            // Reload tasks
+            loadKidsTasks();
+          })
+          .catch(function() {
+            input.disabled = false;
+            input.value = '';
+            errorEl.textContent = 'Netzwerkfehler';
+            input.classList.add('error', 'shake');
+            input.focus();
+          });
+      }
+    });
+  }
+
+  /* ===== Init ===== */
+  function init() {
+    handlePinInput(
+      document.getElementById('admin-pin'),
+      document.getElementById('admin-pin-error'),
+      'admin'
+    );
+    handlePinInput(
+      document.getElementById('kids-pin'),
+      document.getElementById('kids-pin-error'),
+      'child'
+    );
+    setupModalPin();
+    restoreSession();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+
+</body>
+</html>

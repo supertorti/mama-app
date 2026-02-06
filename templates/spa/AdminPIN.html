@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Admin Code eingeben</title>
+
+    <!-- App Icon -->
+    <link rel="apple-touch-icon" href="MetroUI-Other-Task-icon.png">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* iOS-ähnliches Design */
+        html, body {
+            background-color: #f5f5f7;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Zurück-Button Container */
+        .back-button {
+            padding: 16px 20px;
+            margin-top: env(safe-area-inset-top);
+        }
+
+        .back-arrow {
+            width: 28px;
+            height: 28px;
+            color: #1c1c1e;
+        }
+
+        /* Hauptcontainer zentriert */
+        .pin-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 80px 20px 20px;
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+        }
+
+        /* Titel */
+        .pin-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1c1c1e;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        /* PIN Input */
+        .pin-input {
+            width: 100%;
+            max-width: 320px;
+            height: 56px;
+            background-color: #ffffff;
+            border: 1px solid #d1d1d6;
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: 500;
+            text-align: center;
+            letter-spacing: 8px;
+            color: #1c1c1e;
+            padding: 0 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+        }
+
+        .pin-input:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 4px rgba(0,122,255,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Zurück-Button -->
+<div class="back-button">
+    <svg class="back-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    </svg>
+</div>
+
+<!-- PIN Eingabe Container -->
+<div class="pin-container">
+
+    <!-- Titel -->
+    <h1 class="pin-title">Admin Code eingeben</h1>
+
+    <!-- PIN Input -->
+    <input
+            type="password"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="4"
+            class="pin-input"
+            placeholder="••••"
+            autocomplete="off"
+    >
+
+</div>
+
+</body>
+</html>

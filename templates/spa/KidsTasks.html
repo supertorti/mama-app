@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Deine Aufgaben</title>
+
+  <!-- App Icon -->
+  <link rel="apple-touch-icon" href="MetroUI-Other-Task-icon.png">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f5f5f7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      padding-bottom: 100px;
+    }
+
+    .main-container {
+      padding: 1.5rem 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .greeting {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #000000;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    .page-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    /* Task Card */
+    .task-card {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .task-icon {
+      width: 48px;
+      height: 48px;
+      font-size: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .task-content {
+      flex-grow: 1;
+      min-width: 0;
+    }
+
+    .task-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #000000;
+      margin-bottom: 0.125rem;
+      line-height: 1.3;
+    }
+
+    .task-time {
+      font-size: 0.8rem;
+      color: #6c757d;
+      margin-bottom: 0.125rem;
+    }
+
+    .task-points {
+      font-size: 0.8rem;
+      color: #6c757d;
+    }
+
+    .task-button {
+      background-color: #5cb85c;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: transform 0.1s, background-color 0.2s;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .task-button:active {
+      transform: scale(0.96);
+      background-color: #4cae4c;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: #ffffff;
+      border-top: 1px solid #e0e0e0;
+      padding: 0.75rem 1rem;
+      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .filter-button {
+      background-color: #f5f5f7;
+      color: #000000;
+      border: none;
+      border-radius: 10px;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: background-color 0.2s;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .filter-button.active {
+      background-color: #5cb85c;
+      color: #ffffff;
+    }
+
+    .filter-button:active {
+      opacity: 0.8;
+    }
+
+    /* Home Indicator */
+    .home-indicator {
+      width: 140px;
+      height: 5px;
+      background-color: #000000;
+      border-radius: 3px;
+      margin: 0.75rem auto 0 auto;
+    }
+  </style>
+</head>
+<body>
+<!-- Main Container -->
+<div class="main-container">
+  <!-- Header -->
+  <div class="greeting">Hi Jannis 👋</div>
+  <h1 class="page-title">Deine Aufgaben</h1>
+
+  <!-- Task List -->
+  <div class="task-list">
+    <!-- Task 1 -->
+    <div class="task-card">
+      <div class="task-icon">🛏️</div>
+      <div class="task-content">
+        <div class="task-title">Zimmer aufräumen</div>
+        <div class="task-time">Bis 15:00</div>
+        <div class="task-points">+3 Punkte</div>
+      </div>
+      <button class="task-button">Erledigt</button>
+    </div>
+
+    <!-- Task 2 -->
+    <div class="task-card">
+      <div class="task-icon">🐶</div>
+      <div class="task-content">
+        <div class="task-title">Hund füttern</div>
+        <div class="task-time">Bis 18:00</div>
+        <div class="task-points">+2 Punkte</div>
+      </div>
+      <button class="task-button">Erledigt</button>
+    </div>
+
+    <!-- Task 3 -->
+    <div class="task-card">
+      <div class="task-icon">🏠</div>
+      <div class="task-content">
+        <div class="task-title">Hausaufgaben machen</div>
+        <div class="task-time"></div>
+        <div class="task-points">+3 Punkte</div>
+      </div>
+      <button class="task-button">Erledigt</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+  <div class="filter-buttons">
+    <button class="filter-button active">Alle</button>
+    <button class="filter-button">Erledigt</button>
+  </div>
+
+</div>
+</body>
+</html>
+
+

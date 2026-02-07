@@ -40,7 +40,7 @@ class PinAuthController extends AbstractController
                 $result['childId'] = $result['userId'];
             }
 
-            return new JsonResponse($result, JSON_THROW_ON_ERROR);
+            return new JsonResponse($result);
         } catch (UnauthorizedHttpException) {
             return new JsonResponse([
                 'success' => false,

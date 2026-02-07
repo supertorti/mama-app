@@ -1060,7 +1060,7 @@
       opts.body = JSON.stringify(body);
     }
     return fetch(path, opts).then(function(res) {
-      if (res.status === 401 && state.token && path !== '/public/api/pin/check') {
+      if (res.status === 401 && state.token && path !== '/api/pin/check') {
         logout();
         showScreen('screen-who');
         showToast('Sitzung abgelaufen');
@@ -1145,7 +1145,7 @@
         var pin = this.value;
         this.disabled = true;
 
-        api('POST', '/public/api/pin/check', { pin: pin }).then(function(data) {
+        api('POST', '/api/pin/check', { pin: pin }).then(function(data) {
           inputEl.disabled = false;
 
           if (!data.success) {
@@ -1202,7 +1202,7 @@
 
   /* ===== Admin: Load Tasks ===== */
   function loadAdminTasks() {
-    api('GET', '/public/api/admin/tasks').then(function(data) {
+    api('GET', '/api/admin/tasks').then(function(data) {
       if (data.success) {
         state.adminTasks = data.data;
         renderAdminTasks();
@@ -1210,7 +1210,7 @@
     }).catch(function() {});
 
     // Also load children for the dropdown
-    api('GET', '/public/api/admin/children').then(function(data) {
+    api('GET', '/api/admin/children').then(function(data) {
       if (data.success) {
         state.children = data.data;
       }
@@ -1325,7 +1325,7 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>';
 
-    api('POST', '/public/api/admin/tasks', {
+    api('POST', '/api/admin/tasks', {
       childId: childId,
       title: title,
       points: points,
@@ -1359,7 +1359,7 @@
     var cid = state.childId || state.userId;
     document.getElementById('kids-greeting').textContent = 'Hi ' + (state.userName || '') + ' \u{1F44B}';
 
-    api('GET', '/public/api/child/' + cid + '/tasks').then(function(data) {
+    api('GET', '/api/child/' + cid + '/tasks').then(function(data) {
       if (data.success) {
         state.kidsTasks = data.data;
         renderKidsTasks();
@@ -1367,7 +1367,7 @@
     }).catch(function() {});
 
     // Load points
-    api('GET', '/public/api/child/' + cid + '/points').then(function(data) {
+    api('GET', '/api/child/' + cid + '/points').then(function(data) {
       if (data.success) {
         document.getElementById('kids-points-badge').textContent = '\u2B50 ' + data.data.points + ' Punkte';
       }
@@ -1458,7 +1458,7 @@
         var pin = this.value;
         input.disabled = true;
 
-        api('POST', '/public/api/child/tasks/' + state.completingTaskId + '/complete', { pin: pin })
+        api('POST', '/api/child/tasks/' + state.completingTaskId + '/complete', { pin: pin })
           .then(function(data) {
             input.disabled = false;
 

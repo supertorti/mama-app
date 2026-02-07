@@ -8,6 +8,7 @@ use App\Entity\Task;
 use App\Entity\User;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
+use App\Service\PushNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -74,6 +75,7 @@ class AdminController extends AbstractController
         Request $request,
         UserRepository $userRepo,
         EntityManagerInterface $em,
+        PushNotificationService $pushService,
     ): JsonResponse {
         /** @var array{childId?: int, title?: string, description?: string, points?: int, dueDate?: string} $data */
         $data = json_decode((string) $request->getContent(), true) ?? [];
@@ -99,6 +101,16 @@ class AdminController extends AbstractController
 
         $em->persist($task);
         $em->flush();
+
+        try {
+            $pushService->sendToUser($child, [
+                'title' => 'Neue Aufgabe!',
+                'body' => $task->getTitle(),
+                'url' => '/',
+            ]);
+        } catch (\Throwable) {
+            // Push is best-effort — never fail task creation
+        }
 
         return new JsonResponse([
             'success' => true,

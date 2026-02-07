@@ -40,6 +40,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $updatedAt;
 
+    /** @var array{endpoint: string, keys: array{p256dh: string, auth: string}}|null */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $pushSubscription = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $pushUpdatedAt = null;
+
     /** @var Collection<int, Task> */
     #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     private Collection $tasks;
@@ -129,6 +136,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getPointTransactions(): Collection
     {
         return $this->pointTransactions;
+    }
+
+    /** @return array{endpoint: string, keys: array{p256dh: string, auth: string}}|null */
+    public function getPushSubscription(): ?array
+    {
+        return $this->pushSubscription;
+    }
+
+    /** @param array{endpoint: string, keys: array{p256dh: string, auth: string}}|null $pushSubscription */
+    public function setPushSubscription(?array $pushSubscription): static
+    {
+        $this->pushSubscription = $pushSubscription;
+
+        return $this;
+    }
+
+    public function getPushUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->pushUpdatedAt;
+    }
+
+    public function setPushUpdatedAt(?\DateTimeImmutable $pushUpdatedAt): static
+    {
+        $this->pushUpdatedAt = $pushUpdatedAt;
+
+        return $this;
     }
 
     # Hash a plain PIN with bcrypt and store it

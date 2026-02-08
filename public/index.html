@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="back-translucent">
   <title>Aufgaben</title>
   <link rel="apple-touch-icon" href="MetroUI-Other-Task-icon.png">
   <link rel="manifest" href="manifest.json">
@@ -801,6 +801,30 @@
       line-height: 1;
     }
 
+    /* ===== Points Screen ===== */
+    .points-card {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .points-child-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #000000;
+    }
+
+    .points-badge {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #5cb85c;
+    }
+
     /* ===== Loading Spinner ===== */
     .spinner {
       display: inline-block;
@@ -877,7 +901,6 @@
       <h1 class="page-title">Aufgaben</h1>
       <div style="display:flex;gap:0.5rem;align-items:center;">
         <button id="admin-push-bell" class="push-bell" onclick="togglePush()" style="display:none;" title="Push-Benachrichtigungen">&#x1F514;</button>
-        <button class="header-icon" onclick="showScreen('screen-who'); logout();">&#x2630;</button>
       </div>
     </div>
     <div class="segment-control">
@@ -890,7 +913,7 @@
   <div class="bottom-nav">
     <button class="nav-icon" onclick="showScreen('screen-who'); logout();">&#x2630;</button>
     <button class="fab-button" onclick="openAddTask()">+</button>
-    <button class="nav-icon">&#x2713;</button>
+    <button class="nav-icon" onclick="openPointsScreen()">&#x2713;</button>
   </div>
 </div>
 
@@ -917,7 +940,9 @@
         <div class="input-icon">&#x1F4CB;</div>
         <div class="input-label">Aufgabe</div>
       </div>
-      <input id="add-task-title" type="text" class="text-input" placeholder="z. B. Zimmer aufraumen">
+      <select id="add-task-title" class="select-input">
+        <option value="">Aufgabe auswaehlen...</option>
+      </select>
     </div>
 
     <div class="input-card">
@@ -940,12 +965,23 @@
   </div>
 </div>
 
+<!-- ===== Screen: Admin Points ===== -->
+<div id="screen-admin-points" class="screen">
+  <div class="add-task-main">
+    <div class="top-bar">
+      <button class="back-button" onclick="showScreen('screen-admin')">&larr;</button>
+      <h1 class="page-title">Punkte</h1>
+    </div>
+    <div id="admin-points-container"></div>
+  </div>
+</div>
+
 <!-- ===== Screen: Kids Tasks ===== -->
 <div id="screen-kids" class="screen">
   <div class="kids-main">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div id="kids-greeting" class="greeting" style="flex:1;text-align:left;"></div>
-      <button id="kids-push-bell" class="push-bell" onclick="togglePush()" style="display:none;" title="Push-Benachrichtigungen">&#x1F514;</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;position: relative">
+      <div id="kids-greeting" class="greeting" style="flex:1;"></div>
+      <button id="kids-push-bell" class="push-bell" onclick="togglePush()" style="position: absolute; right: 10px" title="Push-Benachrichtigungen">&#x1F514;</button>
     </div>
     <h1 class="kids-title">Deine Aufgaben</h1>
     <div id="kids-push-banner"></div>
@@ -987,7 +1023,20 @@
   'use strict';
 
   /* ===== State ===== */
-  var state = {
+  const RELOAD_TIME = 10;
+
+  const TASK_OPTIONS = [
+    'Spuelmaschine ausraeumen',
+    'Spuelmaschine einraeumen',
+    'Cola hochbringen',
+    'Saugen',
+    'Einkaufen Gehen',
+    'Essen machen',
+    'Duschen Gehen',
+    'Zimmer aufraeumen'
+  ];
+
+  const state = {
     token: null,
     role: null,
     userId: null,
@@ -999,13 +1048,14 @@
     kidsTasks: [],
     children: [],
     completingTaskId: null,
+    reloadInterval: null,
     pushSupported: false,
     pushSubscription: null,
     vapidPublicKey: null
   };
 
   /* ===== Utility: Icon Mapping ===== */
-  var iconKeywords = {
+  const iconKeywords = {
     'zimmer': '\u{1F6CF}\uFE0F',
     'aufraum': '\u{1F6CF}\uFE0F',
     'bett': '\u{1F6CF}\uFE0F',
@@ -1041,9 +1091,9 @@
   };
 
   function getTaskIcon(title) {
-    var lower = title.toLowerCase();
-    var keys = Object.keys(iconKeywords);
-    for (var i = 0; i < keys.length; i++) {
+    const lower = title.toLowerCase();
+    const keys = Object.keys(iconKeywords);
+    for (let i = 0; i < keys.length; i++) {
       if (lower.indexOf(keys[i]) !== -1) {
         return iconKeywords[keys[i]];
       }
@@ -1055,9 +1105,9 @@
   function formatDueDate(isoString) {
     if (!isoString) return '';
     try {
-      var d = new Date(isoString);
-      var h = d.getHours().toString().padStart(2, '0');
-      var m = d.getMinutes().toString().padStart(2, '0');
+      const d = new Date(isoString);
+      const h = d.getHours().toString().padStart(2, '0');
+      const m = d.getMinutes().toString().padStart(2, '0');
       return 'Bis ' + h + ':' + m;
     } catch (e) {
       return '';
@@ -1067,8 +1117,8 @@
   /* ===== Utility: Decode JWT ===== */
   function decodeJWT(token) {
     try {
-      var parts = token.split('.');
-      var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      const parts = token.split('.');
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
       return payload;
     } catch (e) {
       return null;
@@ -1077,14 +1127,14 @@
 
   /* ===== Utility: Check JWT Expiry ===== */
   function isTokenExpired(token) {
-    var payload = decodeJWT(token);
+    const payload = decodeJWT(token);
     if (!payload || !payload.exp) return true;
     return (payload.exp * 1000) < Date.now();
   }
 
   /* ===== Toast ===== */
   function showToast(message) {
-    var el = document.getElementById('toast');
+    const el = document.getElementById('toast');
     el.textContent = message;
     el.classList.add('show');
     setTimeout(function() { el.classList.remove('show'); }, 2500);
@@ -1093,11 +1143,11 @@
 
   /* ===== Screen Navigation ===== */
   function showScreen(id) {
-    var screens = document.querySelectorAll('.screen');
-    for (var i = 0; i < screens.length; i++) {
+    const screens = document.querySelectorAll('.screen');
+    for (let i = 0; i < screens.length; i++) {
       screens[i].classList.remove('screen--active');
     }
-    var target = document.getElementById(id);
+    const target = document.getElementById(id);
     if (target) target.classList.add('screen--active');
 
     // Focus PIN input when entering PIN screens
@@ -1110,12 +1160,19 @@
     if (id === 'screen-admin' || id === 'screen-kids') {
       setTimeout(function() { updateBellState(); showPushBanner(); }, 200);
     }
+
+    // Auto-reload for data screens
+    if (id === 'screen-admin' || id === 'screen-kids' || id === 'screen-admin-points') {
+      startReload(id);
+    } else {
+      stopReload();
+    }
   }
   window.showScreen = showScreen;
 
   /* ===== API Helper ===== */
   function api(method, path, body) {
-    var opts = {
+    const opts = {
       method: method,
       headers: { 'Content-Type': 'application/json' }
     };
@@ -1147,13 +1204,35 @@
     state.childId = childId || null;
     localStorage.setItem('jwt', token);
 
-    var payload = decodeJWT(token);
+    const payload = decodeJWT(token);
     state.userName = payload ? payload.name : '';
 
     setTimeout(function() { updateBellState(); showPushBanner(); }, 200);
   }
 
+  /* ===== Auto-Reload ===== */
+  function startReload(screenId) {
+    stopReload();
+    state.reloadInterval = setInterval(function() {
+      if (screenId === 'screen-admin') {
+        loadAdminTasks();
+      } else if (screenId === 'screen-kids') {
+        loadKidsTasks();
+      } else if (screenId === 'screen-admin-points') {
+        openPointsScreen();
+      }
+    }, RELOAD_TIME * 1000);
+  }
+
+  function stopReload() {
+    if (state.reloadInterval) {
+      clearInterval(state.reloadInterval);
+      state.reloadInterval = null;
+    }
+  }
+
   function logout() {
+    stopReload();
     state.token = null;
     state.role = null;
     state.userId = null;
@@ -1176,13 +1255,13 @@
 
   /* ===== Session Restore ===== */
   function restoreSession() {
-    var token = localStorage.getItem('jwt');
+    const token = localStorage.getItem('jwt');
     if (!token || isTokenExpired(token)) {
       localStorage.removeItem('jwt');
       return;
     }
 
-    var payload = decodeJWT(token);
+    const payload = decodeJWT(token);
     if (!payload) return;
 
     state.token = token;
@@ -1210,7 +1289,7 @@
       this.classList.remove('shake');
 
       if (this.value.length === 4) {
-        var pin = this.value;
+        const pin = this.value;
         this.disabled = true;
 
         api('POST', '/api/pin/check', { pin: pin }).then(function(data) {
@@ -1288,8 +1367,8 @@
 
   /* ===== Admin: Render Tasks ===== */
   function renderAdminTasks() {
-    var container = document.getElementById('admin-tasks-container');
-    var tasks = state.adminTasks.filter(function(t) {
+    const container = document.getElementById('admin-tasks-container');
+    const tasks = state.adminTasks.filter(function(t) {
       return t.status === state.adminFilter;
     });
 
@@ -1301,14 +1380,14 @@
     }
 
     // Group tasks by child
-    var groups = {};
+    const groups = {};
     tasks.forEach(function(t) {
-      var name = t.childName || 'Unbekannt';
+      const name = t.childName || 'Unbekannt';
       if (!groups[name]) groups[name] = [];
       groups[name].push(t);
     });
 
-    var html = '';
+    let html = '';
     Object.keys(groups).forEach(function(name) {
       html += '<div class="task-section">';
       html += '<div class="child-name">' + escapeHtml(name) + '</div>';
@@ -1335,7 +1414,7 @@
 
   function escapeHtml(str) {
     if (!str) return '';
-    var div = document.createElement('div');
+    const div = document.createElement('div');
     div.appendChild(document.createTextNode(str));
     return div.innerHTML;
   }
@@ -1352,17 +1431,27 @@
   /* ===== Admin: Open Add Task ===== */
   function openAddTask() {
     // Populate children dropdown
-    var select = document.getElementById('add-child-select');
+    const select = document.getElementById('add-child-select');
     select.innerHTML = '<option value="">Kind auswaehlen...</option>';
     state.children.forEach(function(c) {
-      var opt = document.createElement('option');
+      const opt = document.createElement('option');
       opt.value = c.id;
       opt.textContent = c.name;
       select.appendChild(opt);
     });
 
+    // Populate task dropdown
+    const taskSelect = document.getElementById('add-task-title');
+    taskSelect.innerHTML = '<option value="">Aufgabe auswaehlen...</option>';
+    TASK_OPTIONS.forEach(function(task) {
+      const opt = document.createElement('option');
+      opt.value = task;
+      opt.textContent = task;
+      taskSelect.appendChild(opt);
+    });
+
     // Reset form
-    document.getElementById('add-task-title').value = '';
+    taskSelect.value = '';
     document.getElementById('add-task-time').value = '';
     document.getElementById('add-task-points').value = '';
 
@@ -1372,10 +1461,10 @@
 
   /* ===== Admin: Save Task ===== */
   function saveTask() {
-    var childId = parseInt(document.getElementById('add-child-select').value);
-    var title = document.getElementById('add-task-title').value.trim();
-    var time = document.getElementById('add-task-time').value;
-    var points = parseInt(document.getElementById('add-task-points').value);
+    const childId = parseInt(document.getElementById('add-child-select').value);
+    const title = document.getElementById('add-task-title').value.trim();
+    const time = document.getElementById('add-task-time').value;
+    const points = parseInt(document.getElementById('add-task-points').value);
 
     if (!childId || !title || !time || !points || points < 1) {
       showToast('Bitte alle Felder ausfuellen');
@@ -1383,13 +1472,13 @@
     }
 
     // Build ISO date string with today's date and selected time
-    var now = new Date();
-    var year = now.getFullYear();
-    var month = (now.getMonth() + 1).toString().padStart(2, '0');
-    var day = now.getDate().toString().padStart(2, '0');
-    var dueDate = year + '-' + month + '-' + day + 'T' + time + ':00';
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const dueDate = year + '-' + month + '-' + day + 'T' + time + ':00';
 
-    var btn = document.getElementById('save-task-btn');
+    const btn = document.getElementById('save-task-btn');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>';
 
@@ -1407,9 +1496,9 @@
         loadAdminTasks();
         showScreen('screen-admin');
       } else {
-        var msg = 'Fehler beim Speichern';
+        let msg = 'Fehler beim Speichern';
         if (data.errors) {
-          var firstKey = Object.keys(data.errors)[0];
+          const firstKey = Object.keys(data.errors)[0];
           if (firstKey) msg = data.errors[firstKey];
         }
         showToast(msg);
@@ -1422,9 +1511,44 @@
   }
   window.saveTask = saveTask;
 
+  /* ===== Admin: Points Screen ===== */
+  function openPointsScreen() {
+    api('GET', '/api/admin/children').then(function(data) {
+      if (data.success) {
+        state.children = data.data;
+        renderPointsList(data.data);
+        showScreen('screen-admin-points');
+      }
+    }).catch(function() {
+      showToast('Fehler beim Laden');
+    });
+  }
+  window.openPointsScreen = openPointsScreen;
+
+  function renderPointsList(children) {
+      const container = document.getElementById('admin-points-container');
+
+      if (!children || children.length === 0) {
+      container.innerHTML = '<div class="empty-state">' +
+        '<div class="empty-state-icon">\u{1F464}</div>' +
+        '<p>Keine Kinder vorhanden</p></div>';
+      return;
+    }
+
+      let html = '';
+      children.forEach(function(c) {
+      html += '<div class="points-card">';
+      html += '<span class="points-child-name">' + escapeHtml(c.name) + '</span>';
+      html += '<span class="points-badge">\u2B50 ' + c.points + ' Punkte</span>';
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
   /* ===== Kids: Load Tasks ===== */
   function loadKidsTasks() {
-    var cid = state.childId || state.userId;
+    const cid = state.childId || state.userId;
     document.getElementById('kids-greeting').textContent = 'Hi ' + (state.userName || '') + ' \u{1F44B}';
 
     api('GET', '/api/child/' + cid + '/tasks').then(function(data) {
@@ -1444,8 +1568,8 @@
 
   /* ===== Kids: Render Tasks ===== */
   function renderKidsTasks() {
-    var container = document.getElementById('kids-tasks-container');
-    var tasks = state.kidsTasks;
+    const container = document.getElementById('kids-tasks-container');
+    let tasks = state.kidsTasks;
 
     if (state.kidsFilter === 'completed') {
       tasks = tasks.filter(function(t) { return t.status === 'completed'; });
@@ -1460,13 +1584,13 @@
       return;
     }
 
-    var html = '';
+    let html = '';
     tasks.forEach(function(t) {
       html += '<div class="task-card">';
       html += '<div class="task-icon">' + getTaskIcon(t.title) + '</div>';
       html += '<div class="task-content">';
       html += '<div class="task-title">' + escapeHtml(t.title) + '</div>';
-      var timeStr = formatDueDate(t.dueDate);
+      const timeStr = formatDueDate(t.dueDate);
       if (timeStr) html += '<div class="task-time">' + escapeHtml(timeStr) + '</div>';
       if (t.points) html += '<div class="task-points">+' + t.points + ' Punkte</div>';
       html += '</div>';
@@ -1495,8 +1619,8 @@
   /* ===== Modal: Open ===== */
   function openCompleteModal(taskId) {
     state.completingTaskId = taskId;
-    var pinInput = document.getElementById('modal-pin');
-    var errorEl = document.getElementById('modal-pin-error');
+    const pinInput = document.getElementById('modal-pin');
+    const errorEl = document.getElementById('modal-pin-error');
     pinInput.value = '';
     pinInput.classList.remove('error', 'shake');
     errorEl.textContent = '';
@@ -1514,8 +1638,8 @@
 
   /* ===== Modal: PIN Handler ===== */
   function setupModalPin() {
-    var input = document.getElementById('modal-pin');
-    var errorEl = document.getElementById('modal-pin-error');
+    const input = document.getElementById('modal-pin');
+    const errorEl = document.getElementById('modal-pin-error');
 
     input.addEventListener('input', function() {
       this.value = this.value.replace(/[^0-9]/g, '');
@@ -1523,7 +1647,7 @@
       this.classList.remove('error', 'shake');
 
       if (this.value.length === 4) {
-        var pin = this.value;
+        const pin = this.value;
         input.disabled = true;
 
         api('POST', '/api/child/tasks/' + state.completingTaskId + '/complete', { pin: pin })
@@ -1572,18 +1696,18 @@
   }
 
   function urlBase64ToUint8Array(base64String) {
-    var padding = '='.repeat((4 - base64String.length % 4) % 4);
-    var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-    var rawData = atob(base64);
-    var outputArray = new Uint8Array(rawData.length);
-    for (var i = 0; i < rawData.length; i++) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; i++) {
       outputArray[i] = rawData.charCodeAt(i);
     }
     return outputArray;
   }
 
   function updateBellState() {
-    var bells = [
+    const bells = [
       document.getElementById('admin-push-bell'),
       document.getElementById('kids-push-bell')
     ];
@@ -1616,15 +1740,15 @@
     if (!isStandalone() || !state.pushSupported || state.pushSubscription || !state.token) return;
     if (typeof Notification !== 'undefined' && Notification.permission === 'denied') return;
 
-    var dismissed = localStorage.getItem('pushBannerDismissed');
+    const dismissed = localStorage.getItem('pushBannerDismissed');
     if (dismissed) {
-      var dismissedAt = parseInt(dismissed, 10);
-      var threeDays = 3 * 24 * 60 * 60 * 1000;
+      const dismissedAt = parseInt(dismissed, 10);
+      const threeDays = 3 * 24 * 60 * 60 * 1000;
       if (Date.now() - dismissedAt < threeDays) return;
     }
 
-    var containerId = state.role === 'admin' ? 'admin-push-banner' : 'kids-push-banner';
-    var container = document.getElementById(containerId);
+    const containerId = state.role === 'admin' ? 'admin-push-banner' : 'kids-push-banner';
+    const container = document.getElementById(containerId);
     if (!container) return;
 
     container.innerHTML = '<div class="push-banner">' +
@@ -1637,8 +1761,8 @@
 
   function dismissPushBanner() {
     localStorage.setItem('pushBannerDismissed', Date.now().toString());
-    var ab = document.getElementById('admin-push-banner');
-    var kb = document.getElementById('kids-push-banner');
+    const ab = document.getElementById('admin-push-banner');
+    const kb = document.getElementById('kids-push-banner');
     if (ab) ab.innerHTML = '';
     if (kb) kb.innerHTML = '';
   }
@@ -1671,7 +1795,7 @@
   window.togglePush = togglePush;
 
   function subscribePush() {
-    var keyPromise;
+    let keyPromise;
     if (state.vapidPublicKey) {
       keyPromise = Promise.resolve(state.vapidPublicKey);
     } else {
@@ -1697,7 +1821,7 @@
         });
       });
     }).then(function(subscription) {
-      var subJson = subscription.toJSON();
+      const subJson = subscription.toJSON();
       return api('POST', '/api/push/subscribe', {
         endpoint: subJson.endpoint,
         keys: {
@@ -1708,8 +1832,8 @@
         if (data.success) {
           state.pushSubscription = subscription;
           updateBellState();
-          var ab = document.getElementById('admin-push-banner');
-          var kb = document.getElementById('kids-push-banner');
+          const ab = document.getElementById('admin-push-banner');
+          const kb = document.getElementById('kids-push-banner');
           if (ab) ab.innerHTML = '';
           if (kb) kb.innerHTML = '';
           showToast('Benachrichtigungen aktiviert!');

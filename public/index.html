@@ -468,7 +468,19 @@
     }
 
     .time-input {
+      -webkit-appearance: none;
+      appearance: none;
       color: #000000;
+      font-size: 0.95rem;
+      padding: 1rem;
+      padding-right: 2.5rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%238e8e93' viewBox='0 0 16 16'%3E%3Cpath d='M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71V3.5z'/%3E%3Cpath d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+    }
+
+    .time-input::-webkit-date-and-time-value {
+      text-align: left;
     }
 
     .number-input {
@@ -943,6 +955,7 @@
       <select id="add-task-title" class="select-input">
         <option value="">Aufgabe auswaehlen...</option>
       </select>
+      <input id="add-task-custom" type="text" class="text-input" placeholder="Eigene Aufgabe eingeben..." style="display:none; margin-top:0.75rem;">
     </div>
 
     <div class="input-card">
@@ -1025,16 +1038,16 @@
   /* ===== State ===== */
   const RELOAD_TIME = 10;
 
-  const TASK_OPTIONS = [
-    'Spülmaschine ausräumen',
-    'Spülmaschine einräumen',
-    'Cola hochbringen',
-    'Saugen',
-    'Einkaufen Gehen',
-    'Essen machen',
-    'Duschen Gehen',
-    'Zimmer aufräumen'
-  ];
+    const TASK_OPTIONS = [
+        'Spülmaschine ausräumen',
+        'Spülmaschine einräumen',
+        'Cola hochbringen',
+        'Saugen',
+        'Einkaufen Gehen',
+        'Essen machen',
+        'Duschen Gehen',
+        'Zimmer aufräumen'
+    ];
 
   const state = {
     token: null,
@@ -1449,10 +1462,21 @@
       opt.textContent = task;
       taskSelect.appendChild(opt);
     });
+    const customOpt = document.createElement('option');
+    customOpt.value = '__custom__';
+    customOpt.textContent = 'Eigene Aufgabe';
+    taskSelect.appendChild(customOpt);
 
     // Reset form
     taskSelect.value = '';
-    document.getElementById('add-task-time').value = '';
+    const customInput = document.getElementById('add-task-custom');
+    customInput.value = '';
+    customInput.style.display = 'none';
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 15);
+    const h = now.getHours().toString().padStart(2, '0');
+    const m = now.getMinutes().toString().padStart(2, '0');
+    document.getElementById('add-task-time').value = h + ':' + m;
     document.getElementById('add-task-points').value = '';
 
     showScreen('screen-admin-add');
@@ -1462,7 +1486,10 @@
   /* ===== Admin: Save Task ===== */
   function saveTask() {
     const childId = parseInt(document.getElementById('add-child-select').value);
-    const title = document.getElementById('add-task-title').value.trim();
+    const selectValue = document.getElementById('add-task-title').value;
+    const title = selectValue === '__custom__'
+      ? document.getElementById('add-task-custom').value.trim()
+      : selectValue.trim();
     const time = document.getElementById('add-task-time').value;
     const points = parseInt(document.getElementById('add-task-points').value);
 
@@ -1878,6 +1905,19 @@
       'child'
     );
     setupModalPin();
+
+    // Toggle custom task input
+    document.getElementById('add-task-title').addEventListener('change', function() {
+      const customInput = document.getElementById('add-task-custom');
+      if (this.value === '__custom__') {
+        customInput.style.display = '';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+        customInput.value = '';
+      }
+    });
+
     restoreSession();
     initPush();
   }

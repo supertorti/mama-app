@@ -320,6 +320,18 @@
       cursor: default;
     }
 
+    .task-button.delete-btn {
+      background-color: #dc3545;
+      color: #ffffff;
+      padding: 0.6rem 1.2rem;
+      font-size: 1.1rem;
+      align-self: center;
+    }
+
+    .task-button.delete-btn:active {
+      background-color: #b02a37;
+    }
+
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -1412,11 +1424,11 @@
         html += '<div class="task-time">' + escapeHtml(formatDueDate(t.dueDate)) + '</div>';
         html += '</div>';
 
-        if (t.status === 'open') {
-          html += '<button class="task-button disabled" onclick="showToast(\'Nur das Kind kann Aufgaben erledigen\')">Erledigt</button>';
-        } else {
+        if (t.status === 'completed') {
           html += '<span class="task-button done">\u2713 Erledigt</span>';
         }
+
+        html += '<button class="task-button delete-btn" onclick="deleteTask(' + t.id + ')" title="Aufgabe l\u00f6schen">\u{1F5D1}</button>';
 
         html += '</div>';
       });
@@ -1441,6 +1453,22 @@
     renderAdminTasks();
   }
   window.setAdminFilter = setAdminFilter;
+
+  /* ===== Admin: Delete Task ===== */
+  function deleteTask(taskId) {
+    if (!confirm('Aufgabe wirklich l\u00f6schen?')) return;
+    api('DELETE', '/api/admin/tasks/' + taskId).then(function(data) {
+      if (data.success) {
+        showToast('Aufgabe gel\u00f6scht');
+        loadAdminTasks();
+      } else {
+        showToast(data.error || 'Fehler beim L\u00f6schen');
+      }
+    }).catch(function() {
+      showToast('Fehler beim L\u00f6schen');
+    });
+  }
+  window.deleteTask = deleteTask;
 
   /* ===== Admin: Open Add Task ===== */
   function openAddTask() {

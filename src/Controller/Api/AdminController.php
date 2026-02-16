@@ -123,6 +123,37 @@ class AdminController extends AbstractController
     }
 
     /**
+     * Delete a task.
+     */
+    #[Route('/tasks/{id}', name: 'api_admin_tasks_delete', methods: ['DELETE'])]
+    public function deleteTask(
+        int $id,
+        TaskRepository $taskRepo,
+        EntityManagerInterface $em,
+    ): JsonResponse {
+        $task = $taskRepo->find($id);
+
+        if ($task === null) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Aufgabe nicht gefunden',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        // Nullify task reference on related PointTransactions to preserve audit trail
+        foreach ($task->getPointTransactions() as $transaction) {
+            $transaction->setTask(null);
+        }
+
+        $em->remove($task);
+        $em->flush();
+
+        return new JsonResponse([
+            'success' => true,
+        ]);
+    }
+
+    /**
      * @param array{childId?: int, title?: string, description?: string, points?: int, dueDate?: string} $data
      * @return array<string, string>
      */

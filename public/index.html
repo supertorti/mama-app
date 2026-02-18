@@ -1765,7 +1765,7 @@
   /* ===== Kids: Load Tasks ===== */
   function loadKidsTasks() {
     const cid = state.childId || state.userId;
-    document.getElementById('kids-greeting').textContent = 'Moin ' + (state.userName || '') + ' \u{1F44B}';
+    document.getElementById('kids-greeting').textContent = 'Hi ' + (state.userName || '') + ' \u{1F44B}';
 
     api('GET', '/api/child/' + cid + '/tasks').then(function(data) {
       if (data.success) {

@@ -42,6 +42,7 @@ class ChildController extends AbstractController
             'points' => $task->getPoints(),
             'dueDate' => $task->getDueDate()?->format(\DateTimeInterface::ATOM),
             'status' => $task->getStatus()->value,
+            'completedAt' => $task->getCompletedAt()?->format(\DateTimeInterface::ATOM),
         ], $tasks);
 
         return new JsonResponse([
@@ -101,13 +102,19 @@ class ChildController extends AbstractController
         $task->setCompletedAt(new \DateTimeImmutable());
         $em->flush();
 
-        # Award points
-        $pointService->addPoints(
-            $user,
-            $task->getPoints(),
-            'Aufgabe erledigt: ' . $task->getTitle(),
-            $task,
-        );
+        # Award points (0 if past due date)
+        $now = new \DateTimeImmutable();
+        $overdue = $task->getDueDate() !== null && $now > $task->getDueDate();
+        $points = $overdue ? 0 : $task->getPoints();
+
+        if ($points > 0) {
+            $pointService->addPoints(
+                $user,
+                $points,
+                'Aufgabe erledigt: ' . $task->getTitle(),
+                $task,
+            );
+        }
 
         return new JsonResponse([
             'success' => true,

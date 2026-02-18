@@ -8,6 +8,7 @@ use App\Entity\Task;
 use App\Entity\User;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
+use App\Service\PointService;
 use App\Service\PushNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -150,6 +151,53 @@ class AdminController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
+        ]);
+    }
+
+    /**
+     * Deduct points from a child.
+     */
+    #[Route('/children/{id}/points', name: 'api_admin_children_points', methods: ['POST'])]
+    public function adjustPoints(
+        int $id,
+        Request $request,
+        UserRepository $userRepo,
+        PointService $pointService,
+    ): JsonResponse {
+        $child = $userRepo->find($id);
+
+        if ($child === null || $child->isAdmin()) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Kind nicht gefunden',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        /** @var array{amount?: int} $data */
+        $data = json_decode((string) $request->getContent(), true) ?? [];
+        $amount = $data['amount'] ?? 0;
+
+        if ($amount >= 0) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Betrag muss negativ sein',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        if ($child->getPoints() + $amount < 0) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Punkte können nicht unter 0 fallen',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $pointService->addPoints($child, $amount, 'Admin-Korrektur');
+
+        return new JsonResponse([
+            'success' => true,
+            'data' => [
+                'points' => $child->getPoints(),
+            ],
         ]);
     }
 

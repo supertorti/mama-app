@@ -858,27 +858,82 @@
       margin-bottom: 0.5rem;
     }
 
-    .points-buttons {
+    .points-gear {
+      font-size: 1.3rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.25rem;
+    }
+
+    .points-actions {
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .points-actions.open {
+      display: flex;
+    }
+
+    .points-mode-row {
       display: flex;
       gap: 0.5rem;
     }
 
-    .points-btn {
-      background-color: #dc3545;
-      color: #ffffff;
+    .points-mode-btn {
+      flex: 1;
+      padding: 0.5rem;
       border: none;
       border-radius: 8px;
-      padding: 0.4rem 0.75rem;
-      font-size: 0.85rem;
-      font-weight: 600;
+      font-size: 1rem;
+      font-weight: 700;
       cursor: pointer;
-      flex: 1;
-      transition: transform 0.1s, background-color 0.2s;
+      transition: transform 0.1s;
     }
 
-    .points-btn:active {
+    .points-mode-btn.add {
+      background-color: #5cb85c;
+      color: #ffffff;
+    }
+
+    .points-mode-btn.subtract {
+      background-color: #dc3545;
+      color: #ffffff;
+    }
+
+    .points-mode-btn:active {
       transform: scale(0.95);
-      background-color: #b02a37;
+    }
+
+    .points-mode-btn.selected {
+      outline: 3px solid #000000;
+    }
+
+    .points-values {
+      display: none;
+      gap: 0.5rem;
+    }
+
+    .points-values.open {
+      display: flex;
+    }
+
+    .points-val-btn {
+      flex: 1;
+      padding: 0.4rem 0.75rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #ffffff;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .points-val-btn:active {
+      transform: scale(0.95);
     }
 
     .points-child-name {
@@ -1640,12 +1695,19 @@
       html += '<div class="points-card-header">';
       html += '<span class="points-child-name">' + escapeHtml(c.name) + '</span>';
       html += '<span class="points-badge">\u2B50 ' + c.points + ' Punkte</span>';
+      html += '<button class="points-gear" onclick="togglePointsActions(' + c.id + ')">\u2699\uFE0F</button>';
       html += '</div>';
-      html += '<div class="points-buttons">';
-      html += '<button class="points-btn" onclick="deductPoints(' + c.id + ', 1)">-1</button>';
-      html += '<button class="points-btn" onclick="deductPoints(' + c.id + ', 3)">-3</button>';
-      html += '<button class="points-btn" onclick="deductPoints(' + c.id + ', 5)">-5</button>';
-      html += '<button class="points-btn" onclick="deductPoints(' + c.id + ', 10)">-10</button>';
+      html += '<div class="points-actions" id="points-actions-' + c.id + '">';
+      html += '<div class="points-mode-row">';
+      html += '<button class="points-mode-btn add" onclick="selectPointsMode(' + c.id + ', 1)">+</button>';
+      html += '<button class="points-mode-btn subtract" onclick="selectPointsMode(' + c.id + ', -1)">-</button>';
+      html += '</div>';
+      html += '<div class="points-values" id="points-values-' + c.id + '">';
+      html += '<button class="points-val-btn" onclick="adjustPoints(' + c.id + ', 1)">1</button>';
+      html += '<button class="points-val-btn" onclick="adjustPoints(' + c.id + ', 3)">3</button>';
+      html += '<button class="points-val-btn" onclick="adjustPoints(' + c.id + ', 5)">5</button>';
+      html += '<button class="points-val-btn" onclick="adjustPoints(' + c.id + ', 10)">10</button>';
+      html += '</div>';
       html += '</div>';
       html += '</div>';
     });
@@ -1653,19 +1715,51 @@
     container.innerHTML = html;
   }
 
-  function deductPoints(childId, amount) {
-    api('POST', '/api/admin/children/' + childId + '/points', { amount: -amount }).then(function(data) {
+    const pointsMode = {};
+
+    function togglePointsActions(childId) {
+        const el = document.getElementById('points-actions-' + childId);
+        el.classList.toggle('open');
+    if (!el.classList.contains('open')) {
+      document.getElementById('points-values-' + childId).classList.remove('open');
+      delete pointsMode[childId];
+    }
+  }
+  window.togglePointsActions = togglePointsActions;
+
+  function selectPointsMode(childId, mode) {
+    pointsMode[childId] = mode;
+      const valuesEl = document.getElementById('points-values-' + childId);
+      const color = mode === 1 ? '#5cb85c' : '#dc3545';
+      valuesEl.querySelectorAll('.points-val-btn').forEach(function(btn) {
+      btn.style.backgroundColor = color;
+    });
+    valuesEl.classList.add('open');
+
+    // Highlight selected mode button
+      const row = valuesEl.previousElementSibling;
+      row.querySelectorAll('.points-mode-btn').forEach(function(btn) {
+      btn.classList.remove('selected');
+    });
+      const idx = mode === 1 ? 0 : 1;
+      row.children[idx].classList.add('selected');
+  }
+  window.selectPointsMode = selectPointsMode;
+
+  function adjustPoints(childId, value) {
+      const amount = pointsMode[childId] * value;
+      api('POST', '/api/admin/children/' + childId + '/points', { amount: amount }).then(function(data) {
       if (data.success) {
-        showToast('-' + amount + ' Punkte');
+        showToast((amount > 0 ? '+' : '') + amount + ' Punkte');
         openPointsScreen();
       } else {
         showToast(data.error || 'Fehler');
       }
     }).catch(function() {
-      showToast('Fehler beim Abziehen');
+      showToast('Fehler');
     });
   }
-  window.deductPoints = deductPoints;
+  window.adjustPoints = adjustPoints;
 
   /* ===== Kids: Load Tasks ===== */
   function loadKidsTasks() {
@@ -1713,8 +1807,8 @@
       html += '<div class="task-title">' + escapeHtml(t.title) + '</div>';
       const timeStr = formatDueDate(t.dueDate);
       if (timeStr) html += '<div class="task-time">' + escapeHtml(timeStr) + '</div>';
-      var overdue = t.status === 'completed' && t.dueDate && t.completedAt && new Date(t.completedAt) > new Date(t.dueDate);
-      if (overdue) {
+        const overdue = t.status === 'completed' && t.dueDate && t.completedAt && new Date(t.completedAt) > new Date(t.dueDate);
+        if (overdue) {
         html += '<div class="task-points" style="color:#dc3545;">0 Punkte</div>';
       } else if (t.points) {
         html += '<div class="task-points">+' + t.points + ' Punkte</div>';

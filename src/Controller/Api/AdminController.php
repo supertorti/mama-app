@@ -177,10 +177,10 @@ class AdminController extends AbstractController
         $data = json_decode((string) $request->getContent(), true) ?? [];
         $amount = $data['amount'] ?? 0;
 
-        if ($amount >= 0) {
+        if ($amount === 0) {
             return new JsonResponse([
                 'success' => false,
-                'error' => 'Betrag muss negativ sein',
+                'error' => 'Betrag darf nicht 0 sein',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 

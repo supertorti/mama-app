@@ -936,6 +936,25 @@
       transform: scale(0.95);
     }
 
+    .reset-points-btn {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1.5rem;
+      background-color: #dc3545;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    .reset-points-btn:active {
+      transform: scale(0.97);
+      background-color: #b02a37;
+    }
+
     .points-child-name {
       font-size: 1rem;
       font-weight: 600;
@@ -1097,6 +1116,7 @@
       <h1 class="page-title">Punkte</h1>
     </div>
     <div id="admin-points-container"></div>
+    <button class="reset-points-btn" onclick="resetAllPoints()">Alle Punkte zurücksetzen</button>
   </div>
 </div>
 
@@ -1761,6 +1781,22 @@
     });
   }
   window.adjustPoints = adjustPoints;
+
+  function resetAllPoints() {
+    if (!confirm('ACHTUNG: Alle Punkte von allen Kindern werden auf 0 gesetzt!')) return;
+    if (!confirm('Bist du WIRKLICH sicher?')) return;
+    api('POST', '/api/admin/children/reset-points').then(function(data) {
+      if (data.success) {
+        showToast('Alle Punkte zur\u00fcckgesetzt');
+        openPointsScreen();
+      } else {
+        showToast(data.error || 'Fehler');
+      }
+    }).catch(function() {
+      showToast('Fehler beim Zur\u00fccksetzen');
+    });
+  }
+  window.resetAllPoints = resetAllPoints;
 
   /* ===== Kids: Load Tasks ===== */
   function loadKidsTasks() {

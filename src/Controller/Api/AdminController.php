@@ -202,6 +202,29 @@ class AdminController extends AbstractController
     }
 
     /**
+     * Reset all children's points to zero.
+     */
+    #[Route('/children/reset-points', name: 'api_admin_children_reset_points', methods: ['POST'])]
+    public function resetAllPoints(
+        UserRepository $userRepo,
+        PointService $pointService,
+    ): JsonResponse {
+        /** @var User[] $children */
+        $children = $userRepo->findBy(['isAdmin' => false]);
+
+        foreach ($children as $child) {
+            $currentPoints = $child->getPoints();
+            if ($currentPoints > 0) {
+                $pointService->addPoints($child, -$currentPoints, 'Alle Punkte zurückgesetzt');
+            }
+        }
+
+        return new JsonResponse([
+            'success' => true,
+        ]);
+    }
+
+    /**
      * @param array{childId?: int, title?: string, description?: string, points?: int, dueDate?: string} $data
      * @return array<string, string>
      */

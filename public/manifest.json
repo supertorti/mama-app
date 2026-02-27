@@ -1,15 +1,25 @@
 {
-  "name": "Aufgaben",
-  "short_name": "Aufgaben",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#f5f5f7",
-  "icons": [
-    {
-      "src": "MetroUI-Other-Task-icon.png",
-      "sizes": "256x256",
-      "type": "image/png"
-    }
-  ]
+    "name": "Aufgaben",
+    "short_name": "Aufgaben",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#f5f5f7",
+    "icons": [
+        {
+            "src": "/icons/MetroUI-Other-Task-icon_192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/MetroUI-Other-Task-icon.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "/MetroUI-Other-Task-icon_512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
 }

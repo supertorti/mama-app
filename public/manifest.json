@@ -7,17 +7,17 @@
     "theme_color": "#f5f5f7",
     "icons": [
         {
-            "src": "/icons/MetroUI-Other-Task-icon_192x192.png",
+            "src": "/public/icons/MetroUI-Other-Task-icon_192x192.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "/icons/MetroUI-Other-Task-icon.png",
+            "src": "/public/MetroUI-Other-Task-icon.png",
             "sizes": "256x256",
             "type": "image/png"
         },
         {
-            "src": "/MetroUI-Other-Task-icon_512x512.png",
+            "src": "/public/icons/MetroUI-Other-Task-icon_512x512.png",
             "sizes": "512x512",
             "type": "image/png"
         }

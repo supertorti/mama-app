@@ -11,8 +11,8 @@ self.addEventListener('push', function(event) {
 
     const options = {
         body: data.body || '',
-        icon: 'MetroUI-Other-Task-icon.png',
-        badge: 'MetroUI-Other-Task-icon.png',
+        icon: 'MetroUI-Other-Task-icon_192x192.png',
+        badge: 'MetroUI-Other-Task-icon_192x192.png',
         data: {url: data.url || '/'},
         vibrate: [200, 100, 200]
     };
